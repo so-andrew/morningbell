@@ -1,25 +1,51 @@
-import logo from './logo.svg';
-import { useState } from 'react';
-import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 
 import MenuBar from './components/navbar';
 import Landing from './components/landing';
-import Footer from './components/footer';
 import CreateRoom from './components/createroom';
+import JoinRoom from './components/joinroom';
+import PlayerRoom from './components/playerroom';
+import HostRoom from './components/hostroom';
+import NotFound from './components/notfound';
 import './App.css';
 
-
-
 function App(){
-	const [id, setId] = useState('');
+	const [id, setID] = useState('');
+	const [username, setUsername] = useState('');
+	const [invalidID, setInvalidID] = useState(true);
+
+	useEffect(() => {
+		if(JSON.parse(window.localStorage.getItem('username'))){
+			setUsername(JSON.parse(window.localStorage.getItem('username')));
+		}
+		// if(JSON.parse(window.localStorage.getItem('id'))){
+		// 	setID(JSON.parse(window.localStorage.getItem('id')));
+		// }
+		if(JSON.parse(window.localStorage.getItem('invalidID'))){
+			setInvalidID(JSON.parse(window.localStorage.getItem('invalidID')));
+		}
+		console.log(invalidID);
+		console.log(JSON.parse(window.localStorage.getItem('invalidID')));
+	}, []);
+
+	useEffect(() => {
+		document.body.style.backgroundColor = '#212529';
+	}, []);
+
+	useEffect(() => {
+		window.localStorage.setItem('username', JSON.stringify(username));
+		window.localStorage.setItem('id', JSON.stringify(id));
+		window.localStorage.setItem('invalidID', JSON.stringify(invalidID));
+	}, [username, id, invalidID]);
 
 	function handleChange(newValue){
-		setId(newValue);
+		setID(newValue);
 	}
 
 	return(
     	<Router>
-			<MenuBar/>
+			<MenuBar id={id} invalidID={invalidID}/>
 			<div className="Content" 
 				style={{
 					backgroundColor: '#212529',
@@ -30,10 +56,19 @@ function App(){
 						<Landing id={id} onChange={handleChange}/>
 					</Route> 
 					<Route exact path="/create">
-						<CreateRoom id={id}/>
+						<CreateRoom username={username} setUsername={setUsername} id={id} setID={setID} invalidID={invalidID} setInvalidID={setInvalidID}/>
 					</Route>
 					<Route exact path="/join">
-						
+						<JoinRoom username={username} setUsername={setUsername} id={id} setID={setID} invalidID={invalidID} setInvalidID={setInvalidID}/>
+					</Route>
+					<Route path="/room/:id">
+						<PlayerRoom username={username} setID={setID} setInvalidID={setInvalidID}/>
+					</Route>
+					<Route path="/host/:id">
+						<HostRoom username={username} setID={setID} setInvalidID={setInvalidID}/>
+					</Route>
+					<Route exact path="/404">
+						<NotFound/>
 					</Route>
 				</Switch>
 			</div>

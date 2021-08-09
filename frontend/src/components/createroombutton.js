@@ -1,11 +1,10 @@
 import { useHistory } from "react-router-dom";
 import Button from 'react-bootstrap/Button';
 
-function CreateRoomButton(props){
+function CreateRoomButton(){
     const history = useHistory();
 
     function handleClick(){
-        //props.handleCreate();
         history.push('create');
     }
 

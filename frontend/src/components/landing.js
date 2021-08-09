@@ -1,11 +1,9 @@
-import { Link, useHistory } from 'react-router-dom';
-import { Button, Container, Row, Col } from 'react-bootstrap';
+import { Container, Row, Col } from 'react-bootstrap';
 import Footer from './footer';
 import CreateRoomButton from './createroombutton';
 import JoinRoomButton from './joinroombutton';
-const axios = require('axios').default;
 
-function Landing(props){
+function Landing(){
     return(
         <div style={{
             height: "100vh",
@@ -13,40 +11,58 @@ function Landing(props){
             <Container fluid="sm" style={{
                 height: '100%'
             }}>
-                <Row className="justify-content-sm-center">
-                    <Col lg>
+                <Row className="d-flex align-items-center" style={{
+                    height: '100vh'
+                }}>
+                    <Col className="d-flex align-items-center" xs={12} sm={12} md={12} lg={6} style={{
+                        height: '50vh'
+                    }}>
                         <div className="splash">
                             <h1 style={{
                                 color: "white",
                                 textAlign: "center",
-                                margin: '10% 5% 10%'
+                                margin: '0em 2em 0em'
                             }}>
                             A buzzer app for the masses.
                             </h1>
                             <h5 style={{
                                 color: "white",
                                 textAlign: "center",
-                                margin: '2% 5% 10%'
+                                margin: '1em 2em 0em'
                             }}>Create private lobbies for your friends to join, or join an existing lobby with the provided room code.</h5>
                         </div>
                     </Col>
-                    <Col lg='align-items-center'>
-                        <Row style={{
-                            paddingTop: '2%',
-                            paddingBottom: '1%',
+                    {/* <Col lg='align-items-center'>
+                        <div className='d-grid gap-2' style={{
+                            margin: '0% 5% 0%'
                         }}>
-                            <div className="text-center">
+                            <CreateRoomButton/>
+                            <JoinRoomButton/>
+                        </div>
+                    </Col> */}
+
+                    <Col xs={12} sm={12} md={12} lg={6} style={{
+                        height: '50vh',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center'
+                    }}>
+                        <Row style={{
+                                paddingTop: '0%',
+                                paddingBottom: '5%',
+                                paddingLeft: '25%',
+                                paddingRight: '25%'
+                            }}>
                                 <CreateRoomButton/>
-                            </div>
-                        </Row>
-                        <Row style={{
-                            paddingTop: '1%',
-                            paddingBottom: '2%'
-                        }}>
-                            <div className="text-center">
+                            </Row>
+                            <Row style={{
+                                paddingTop: '0%',
+                                paddingBottom: '0%',
+                                paddingLeft: '25%',
+                                paddingRight: '25%'
+                            }}>
                                 <JoinRoomButton/>
-                            </div>
-                        </Row>
+                            </Row>
                     </Col>
                 </Row>
                 {/* <Row className="justify-content-center" style={{

@@ -12,17 +12,22 @@ const ref = database.ref('/rooms');
 // Create room
 router.post('/', async (req, res) =>{
     const id = generateRoomID();
-    console.log(id);
-
     const roomRef = ref.child(`${id}`);
     roomRef.set({
-        buzzerLocked: false
+        buzzerLocked: false,
+        host: null,
+        resetTime: Date.now()
     }, (error) => {
         if(error) console.log(error);
     });
-
+    const newLogRef = roomRef.child('logs').push();
+    newLogRef.set({
+        content: `Room created with ID ${id}.`,
+        timestamp: Date.now()
+    });
     res.send(id);
 });
+
 
 // Generates a room code
 function generateRoomID(){

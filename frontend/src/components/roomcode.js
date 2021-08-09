@@ -1,16 +1,13 @@
-import React, { Component } from 'react';
+import React from 'react';
 
-class RoomCode extends React.Component{
-
-    render(){
-        console.log("Room code render()");
-        return <h1 style={{
+const RoomCode = ({id}) =>{
+    return(
+        <h1 style={{
             color: 'white',
             textAlign: 'center',
             margin: '10% 5% 5%'
-        }}>Your room code is {this.props.id}.</h1>
-    };
-    
+        }}>{id.length > 0 ? `Your room code is ${id}.` : "Loading..."}</h1>
+    )
 }
 
 export default RoomCode;

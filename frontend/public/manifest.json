@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Morningbell",
+  "name": "Morningbell - A buzzer app for the masses",
   "icons": [
     {
       "src": "favicon.ico",
