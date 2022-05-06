@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { Container, Row, Col, Button } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
-import firebase from "../firebase"
+import database from "../firebase"
 import PlayerList from './playerlist';
 import Log from './log';
 
 
 const PlayerRoom = (params) => {
     const { id } = useParams();
-    const roomRef = firebase.ref('/rooms').child(`${id}`);
+    const roomRef = database.ref('/rooms').child(`${id}`);
     const usersRef = roomRef.child('users');
     const logRef = roomRef.child('logs');
     const [buzzerLocked, setBuzzerLocked] = useState(false);
@@ -30,7 +30,7 @@ const PlayerRoom = (params) => {
     // }, []);
 
     useEffect(() => {
-        firebase.ref('/rooms').on('value', (snapshot) => {
+        database.ref('/rooms').on('value', (snapshot) => {
             const rooms = snapshot.val();
             if(rooms && Object.keys(rooms).includes(id)){
                 params.setID(id);
@@ -41,7 +41,7 @@ const PlayerRoom = (params) => {
                 logRef.off('value');
                 roomRef.off('value');
                 usersRef.off('value');
-                firebase.ref('/rooms').off('value');
+                database.ref('/rooms').off('value');
                 history.push('/404');
             }
         })

@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import auth from 'firebase.js'
+
 
 import MenuBar from './components/navbar';
 import Landing from './components/landing';
@@ -13,7 +15,16 @@ import './App.css';
 function App(){
 	const [id, setID] = useState('');
 	const [username, setUsername] = useState('');
+	const [user, setUser] = useState()
 	const [invalidID, setInvalidID] = useState(true);
+
+	auth.onAuthStateChanged((user) => {
+		console.log(user)
+	})
+
+	auth.signInAnonymously().catch((error) => {
+		console.log(error.code, error.message)
+	})
 
 	useEffect(() => {
 		if(JSON.parse(window.localStorage.getItem('username'))){

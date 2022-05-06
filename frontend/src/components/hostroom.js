@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import { useHistory, useParams } from 'react-router-dom';
-import firebase from "../firebase";
+import database from "../firebase";
 import HostPlayerList from "./hostplayerlist";
 import Log from "./log";
 import KickModal from "./kickmodal";
@@ -9,7 +9,7 @@ import KickModal from "./kickmodal";
 const HostRoom = (params) => {
     const { id } = useParams();
     const history = useHistory();
-    const roomRef = firebase.ref('/rooms').child(`${id}`);
+    const roomRef = database.ref('/rooms').child(`${id}`);
     const logRef = roomRef.child('logs');
     const usersRef = roomRef.child('users');
     const [buzzerLocked, setBuzzerLocked] = useState(false);
@@ -34,7 +34,7 @@ const HostRoom = (params) => {
     }
 
     useEffect(() => {
-        firebase.ref('/rooms').on('value', (snapshot) => {
+        database.ref('/rooms').on('value', (snapshot) => {
             const rooms = snapshot.val();
             if(rooms && Object.keys(rooms).includes(id)){
                 params.setID(id);
@@ -45,7 +45,7 @@ const HostRoom = (params) => {
                 logRef.off('value');
                 roomRef.off('value');
                 usersRef.off('value');
-                firebase.ref('/rooms').off('value');
+                database.ref('/rooms').off('value');
                 history.push('/404');
             }
         })
