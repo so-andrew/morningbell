@@ -9,7 +9,7 @@ import Log from './log';
 
 const PlayerRoom = (params) => {
     const { id } = useParams();
-    const roomRef = firebase.ref('/rooms').child(`${id}`);
+    const roomRef = firebase.database.ref('/rooms').child(`${id}`);
     const usersRef = roomRef.child('users');
     const logRef = roomRef.child('logs');
     const [buzzerLocked, setBuzzerLocked] = useState(false);
@@ -30,7 +30,7 @@ const PlayerRoom = (params) => {
     // }, []);
 
     useEffect(() => {
-        firebase.ref('/rooms').on('value', (snapshot) => {
+        firebase.database.ref('/rooms').on('value', (snapshot) => {
             const rooms = snapshot.val();
             if(rooms && Object.keys(rooms).includes(id)){
                 params.setID(id);
@@ -41,7 +41,7 @@ const PlayerRoom = (params) => {
                 logRef.off('value');
                 roomRef.off('value');
                 usersRef.off('value');
-                firebase.ref('/rooms').off('value');
+                firebase.database.ref('/rooms').off('value');
                 history.push('/404');
             }
         })

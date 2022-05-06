@@ -9,7 +9,7 @@ import KickModal from "./kickmodal";
 const HostRoom = (params) => {
     const { id } = useParams();
     const history = useHistory();
-    const roomRef = firebase.ref('/rooms').child(`${id}`);
+    const roomRef = firebase.database.ref('/rooms').child(`${id}`);
     const logRef = roomRef.child('logs');
     const usersRef = roomRef.child('users');
     const [buzzerLocked, setBuzzerLocked] = useState(false);
@@ -34,7 +34,7 @@ const HostRoom = (params) => {
     }
 
     useEffect(() => {
-        firebase.ref('/rooms').on('value', (snapshot) => {
+        firebase.database.ref('/rooms').on('value', (snapshot) => {
             const rooms = snapshot.val();
             if(rooms && Object.keys(rooms).includes(id)){
                 params.setID(id);
@@ -45,7 +45,7 @@ const HostRoom = (params) => {
                 logRef.off('value');
                 roomRef.off('value');
                 usersRef.off('value');
-                firebase.ref('/rooms').off('value');
+                firebase.database.ref('/rooms').off('value');
                 history.push('/404');
             }
         })

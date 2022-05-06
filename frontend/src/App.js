@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import { AuthProvider, useAuth } from './contexts/AuthContext'
 
 import MenuBar from './components/navbar';
 import Landing from './components/landing';
@@ -14,6 +15,7 @@ function App(){
 	const [id, setID] = useState('');
 	const [username, setUsername] = useState('');
 	const [invalidID, setInvalidID] = useState(true);
+	const authenticateAnon = useAuth()
 
 	useEffect(() => {
 		if(JSON.parse(window.localStorage.getItem('username'))){
@@ -52,24 +54,26 @@ function App(){
 					height: '100vh'
 					}}>
 				<Switch>
-					<Route exact path="/">
-						<Landing id={id} onChange={handleChange}/>
-					</Route> 
-					<Route exact path="/create">
-						<CreateRoom username={username} setUsername={setUsername} id={id} setID={setID} invalidID={invalidID} setInvalidID={setInvalidID}/>
-					</Route>
-					<Route exact path="/join">
-						<JoinRoom username={username} setUsername={setUsername} id={id} setID={setID} invalidID={invalidID} setInvalidID={setInvalidID}/>
-					</Route>
-					<Route path="/room/:id">
-						<PlayerRoom username={username} setID={setID} setInvalidID={setInvalidID}/>
-					</Route>
-					<Route path="/host/:id">
-						<HostRoom username={username} setID={setID} setInvalidID={setInvalidID}/>
-					</Route>
-					<Route exact path="/404">
-						<NotFound/>
-					</Route>
+					<AuthProvider>
+						<Route exact path="/">
+							<Landing id={id} onChange={handleChange}/>
+						</Route> 
+						<Route exact path="/create">
+							<CreateRoom username={username} setUsername={setUsername} id={id} setID={setID} invalidID={invalidID} setInvalidID={setInvalidID}/>
+						</Route>
+						<Route exact path="/join">
+							<JoinRoom username={username} setUsername={setUsername} id={id} setID={setID} invalidID={invalidID} setInvalidID={setInvalidID}/>
+						</Route>
+						<Route path="/room/:id">
+							<PlayerRoom username={username} setID={setID} setInvalidID={setInvalidID}/>
+						</Route>
+						<Route path="/host/:id">
+							<HostRoom username={username} setID={setID} setInvalidID={setInvalidID}/>
+						</Route>
+						<Route exact path="/404">
+							<NotFound/>
+						</Route>
+					</AuthProvider>
 				</Switch>
 			</div>
     	</Router>
