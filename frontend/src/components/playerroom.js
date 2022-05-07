@@ -2,16 +2,23 @@ import React, { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 import { Container, Row, Col, Button } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
-import database from "../firebase"
+import { getDatabase, ref, child, serverTimestamp, onValue, update, set } from "firebase/database";
+import app from "../firebase"
 import PlayerList from './playerlist';
 import Log from './log';
 
 
 const PlayerRoom = (params) => {
     const { id } = useParams();
-    const roomRef = database.ref('/rooms').child(`${id}`);
-    const usersRef = roomRef.child('users');
-    const logRef = roomRef.child('logs');
+
+    // Database references
+    const database = getDatabase(app);
+    const roomRef = ref(database, `rooms/${id}`);
+    const usersRef = child(roomRef,'users');
+    const logRef = child(roomRef, 'logs');
+    const buzzesRef = child(roomRef, 'buzzes');
+
+    // State
     const [buzzerLocked, setBuzzerLocked] = useState(false);
     const [userList, setUserList] = useState([]);
     const [host, setHost] = useState('');
@@ -29,8 +36,10 @@ const PlayerRoom = (params) => {
     //     });
     // }, []);
 
+    // Checks for valid room ID
+    // If ID is invalid, unsubscribe from listeners, show 404 screen
     useEffect(() => {
-        database.ref('/rooms').on('value', (snapshot) => {
+        let unsubscribeAllRooms = onValue(ref(database, 'rooms'), (snapshot) => {
             const rooms = snapshot.val();
             if(rooms && Object.keys(rooms).includes(id)){
                 params.setID(id);
@@ -38,43 +47,48 @@ const PlayerRoom = (params) => {
             }
             else{
                 params.setInvalidID(true);
-                logRef.off('value');
-                roomRef.off('value');
-                usersRef.off('value');
-                database.ref('/rooms').off('value');
+                unsubscribeAllRooms()
+                //unsubscribeLog()
+                //unsubscribeUsers()
+                //ref(database,'rooms').off('value');
                 history.push('/404');
             }
         })
     })
 
+    // Update the log client-side when the database changes
     useEffect(() => {
-        logRef.on('value', (snapshot) => {
+        let unsubscribeLog = onValue(logRef, (snapshot) => {
             const logList = snapshot.val();
             if(logList) setLog(Object.values(logList));
         });
 
         return () => {
-            logRef.off('value');
+            //logRef.off('value');
+            unsubscribeLog()
         }
     }, []);
 
+    // Set the host of the room (only runs once)
     useEffect(() => {
-        roomRef.once('value', (snapshot) => {
+        onValue(roomRef, (snapshot) => {
             const room = snapshot.val();
             setHost(room.host);
-        });
+        }, { onlyOnce: true });
     }, []);
 
+    // Function to compare buzzer timestamps
     function compareBuzzTime(user1, user2){
         if(user1[1] < user2[1]) return -1;
         if(user1[1] > user2[1]) return 1;
         return 0;
     }
 
+    // Displays the state of the buzzer, which player buzzed
     useEffect(() => {
-        roomRef.on('value', (snapshot) => {
+        let unsubscribeBuzzerCheck = onValue(roomRef, (snapshot) => {
             const room = snapshot.val();
-            if(room)setBuzzerLocked(room.buzzerLocked);
+            if(room) setBuzzerLocked(room.buzzerLocked);
             if(room && room.buzzes){
                 let usersThatBuzzed = Object.entries(room.buzzes).filter(element => element[1] >= room.resetTime);
                 //console.log("before: " + usersThatBuzzed);
@@ -88,16 +102,21 @@ const PlayerRoom = (params) => {
         });
 
         return () => {
-            roomRef.off('value');
+            unsubscribeBuzzerCheck()
         }
     }, [])
 
+    // When buzzerLocked changes, run:
+    // If the buzzer is no longer locked, clear the previous buzz
     useEffect(() => {
         if(!buzzerLocked) setBuzz("");
     }, [buzzerLocked])
 
+
+    // Update the player list
+    // Handle player getting kicked
     useEffect(() => {
-        usersRef.on('value', (snapshot) => {
+        let unsubscribeUsers = onValue(usersRef, (snapshot) => {
             const users = snapshot.val();
             if(users){
                 let currentUsers = Object.keys(users);
@@ -109,10 +128,12 @@ const PlayerRoom = (params) => {
         });
 
         return () => {
-            usersRef.off('value');
+           //usersRef.off('value');
+           unsubscribeUsers()
         }
     }, []);
 
+    // Handle buzzing
     function handleClick(){
         if(buzzerLocked){
             //console.log("Buzzer is locked, doing nothing");
@@ -122,11 +143,20 @@ const PlayerRoom = (params) => {
             audio.play();
             setBuzzerLocked(true);
             // Update
+
             let updates = {}
             updates['buzzerLocked'] = true;
-            updates[`buzzes/${params.username}`] = Date.now();
+            updates[`buzzes/${params.username}`] = serverTimestamp();
             updates[`users/${params.username}/buzzedIn`] = true;
-            roomRef.update(updates);
+            //let currentUserRef = buzzesRef.child(`${params.username}`)
+            //currentUserRef.set(app.database.ServerValue.TIMESTAMP);
+
+            let testRef = ref(database, "test")
+            set(testRef, {
+                startedAt: serverTimestamp()
+            })
+            update(roomRef, updates);
+
         }
     }
 

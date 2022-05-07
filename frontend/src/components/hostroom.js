@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Button } from "react-bootstrap";
 import { useHistory, useParams } from 'react-router-dom';
-import database from "../firebase";
+import { getDatabase, ref, child, serverTimestamp, onValue, update } from "firebase/database";
+import app from "../firebase";
 import HostPlayerList from "./hostplayerlist";
 import Log from "./log";
 import KickModal from "./kickmodal";
 
 const HostRoom = (params) => {
     const { id } = useParams();
-    const history = useHistory();
-    const roomRef = database.ref('/rooms').child(`${id}`);
-    const logRef = roomRef.child('logs');
-    const usersRef = roomRef.child('users');
+
+    // Database references
+    const database = getDatabase(app);
+    const roomRef = ref(database, `rooms/${id}`);
+    const usersRef = child(roomRef,'users');
+    const logRef = child(roomRef, 'logs');
+    const buzzesRef = child(roomRef, 'buzzes');
+
+    // State
     const [buzzerLocked, setBuzzerLocked] = useState(false);
     const [userList, setUserList] = useState([]);
     const [buzz, setBuzz] = useState("");
@@ -19,22 +25,25 @@ const HostRoom = (params) => {
     const [modalShow, setModalShow] = useState(false);
     const [selectedUser, setSelectedUser] = useState('');
     const [kickUsername, setKickUsername] = useState('');
+    const history = useHistory();
 
-
+    // Reset the buzzer
     function handleClick(){
         if(buzzerLocked){
             setBuzzerLocked(false);
             let updates = {};
             updates['buzzerLocked'] = false;
-            updates['resetTime'] = Date.now();
+            updates['resetTime'] = serverTimestamp();
             // Reset players' last buzzed time
-            roomRef.update(updates);
+            update(roomRef, updates);
             setBuzz("");
         }
     }
 
+    // Checks for valid room ID
+    // If ID is invalid, unsubscribe from listeners, show 404 screen
     useEffect(() => {
-        database.ref('/rooms').on('value', (snapshot) => {
+        let unsubscribeAllRooms = onValue(ref(database, 'rooms'), (snapshot) => {
             const rooms = snapshot.val();
             if(rooms && Object.keys(rooms).includes(id)){
                 params.setID(id);
@@ -42,20 +51,25 @@ const HostRoom = (params) => {
             }
             else{
                 params.setInvalidID(true);
-                logRef.off('value');
-                roomRef.off('value');
-                usersRef.off('value');
-                database.ref('/rooms').off('value');
+                unsubscribeAllRooms()
+                //unsubscribeLog()
+                //unsubscribeUsers()
                 history.push('/404');
             }
         })
     })
 
+    // Update the log client-side when the database changes
     useEffect(() => {
-        logRef.on('value', (snapshot) => {
+        let unsubscribeLog = onValue(logRef, (snapshot) => {
             const logList = snapshot.val();
             if(logList) setLog(Object.values(logList));
         });
+
+        return () => {
+            //logRef.off('value');
+            unsubscribeLog()
+        }
     }, []);
 
     // useEffect(() => {
@@ -67,14 +81,16 @@ const HostRoom = (params) => {
     //     });
     // }, []);
 
+    // Function to compare buzzer timestamps
     function compareBuzzTime(user1, user2){
         if(user1[1] < user2[1]) return -1;
         if(user1[1] > user2[1]) return 1;
         return 0;
     }
 
+    // Displays the state of the buzzer, which player buzzed
     useEffect(() => {
-        roomRef.on('value', (snapshot) => {
+        let unsubscribeBuzzCheck = onValue(roomRef, (snapshot) => {
             const room = snapshot.val();
             if(room) setBuzzerLocked(room.buzzerLocked);
             if(room && room.buzzes){
@@ -87,21 +103,24 @@ const HostRoom = (params) => {
         });
 
         return () => {
-            roomRef.off('value');
+            unsubscribeBuzzCheck();
         }
     }, []);
 
+    // Update the player list
     useEffect(() => {
-        usersRef.on('value', (snapshot) => {
+        let unsubscribeUsers = onValue(usersRef, (snapshot) => {
             const users = snapshot.val();
             if(users) setUserList(Object.keys(users));
         });
 
         return () => {
-            usersRef.off('value');
+            unsubscribeUsers();
         }
     }, []);
 
+
+    // Kick players
     useEffect(() => {
         if(kickUsername && kickUsername.length > 0){
             let kickUserRef = usersRef.child(`${kickUsername}`);
