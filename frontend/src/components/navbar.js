@@ -1,7 +1,7 @@
 import { Navbar, Container } from 'react-bootstrap';
 
 const MenuBar = (params) => {
-    console.log(params.id, params.invalidID)
+    //console.log(params.id, params.invalidID)
     return(
         <Navbar bg="dark" variant="dark">
             <Container>

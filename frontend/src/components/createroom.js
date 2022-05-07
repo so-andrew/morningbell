@@ -90,7 +90,7 @@ function CreateRoom(params){
     function getRoomIDFromAPI(){
         axios.post('/api/create')
         .then((res) => {
-            console.log(res);
+            //console.log(res);
             params.setID(res.data);
             params.setInvalidID(false);
         })

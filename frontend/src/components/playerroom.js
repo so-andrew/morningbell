@@ -142,19 +142,12 @@ const PlayerRoom = (params) => {
             //console.log("Buzzer is not locked, do something");
             audio.play();
             setBuzzerLocked(true);
+            
             // Update
-
             let updates = {}
             updates['buzzerLocked'] = true;
             updates[`buzzes/${params.username}`] = serverTimestamp();
             updates[`users/${params.username}/buzzedIn`] = true;
-            //let currentUserRef = buzzesRef.child(`${params.username}`)
-            //currentUserRef.set(app.database.ServerValue.TIMESTAMP);
-
-            let testRef = ref(database, "test")
-            set(testRef, {
-                startedAt: serverTimestamp()
-            })
             update(roomRef, updates);
 
         }

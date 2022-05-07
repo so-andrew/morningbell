@@ -33,8 +33,8 @@ function App(){
 		if(JSON.parse(window.localStorage.getItem('invalidID'))){
 			setInvalidID(JSON.parse(window.localStorage.getItem('invalidID')));
 		}
-		console.log(invalidID);
-		console.log(JSON.parse(window.localStorage.getItem('invalidID')));
+		//console.log(invalidID);
+		//console.log(JSON.parse(window.localStorage.getItem('invalidID')));
 	}, []);
 
 	useEffect(() => {
